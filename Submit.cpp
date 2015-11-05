@@ -29,7 +29,20 @@ GLfloat mat_diffuse[] = {0.8,0.2,0.5,1.0};
 GLfloat mat_specular[] = {1.0,1.0,1.0,1.0};
 GLfloat high_shininess[] = {100.0};
 
-float groundWidth(1600.0), groundLong(1800.0);
+float groundWidth(160.0), groundLong(1800.0);
+
+struct image_texture
+{
+	int w;
+	int h;
+	GLubyte* bitmap;
+	GLuint tex;
+	GLUquadricObj *quad;
+};
+
+image_texture texture_ground;
+image_texture texture_car;
+image_texture texture_wheel;
 
 
 //Load the BMP file
@@ -69,6 +82,26 @@ GLubyte* TextureLoadBitmap(char *filename, int *w, int *h)		/* I - Bitmap file t
 
 }
 
+void loadImageTexture(char *filename, image_texture &image_texture)
+{
+	image_texture.bitmap = TextureLoadBitmap(filename, &image_texture.w, &image_texture.h);
+
+	glClearColor(0,0,0,0);
+	glGenTextures(1, &image_texture.tex);
+	glBindTexture(GL_TEXTURE_2D, image_texture.tex);
+
+	// Texture mapping parameters for filter and repeatance
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, image_texture.w, image_texture.h, 0, GL_RGB, GL_UNSIGNED_BYTE, image_texture.bitmap);
+
+	image_texture.quad = gluNewQuadric();
+	gluQuadricTexture(image_texture.quad, GL_TRUE);
+}
+
 void init(void) // All Setup For OpenGL Goes Here
 {
 	// Light 0 Settings
@@ -83,11 +116,12 @@ void init(void) // All Setup For OpenGL Goes Here
 	glEnable(GL_LIGHT0);
 
 	glEnable(GL_NORMALIZE);
-	glEnable(GL_DEPTH_TEST);
-	glEnable(GL_CULL_FACE);		// Cull all the back face
-	glFrontFace(GL_CCW);		// Define Counter-Clockwise as front face
-	
+
+	// Clear Screen color
 	glEnable(GL_COLOR_MATERIAL);
+	glClearColor(0,0,0,0);
+	glClear(GL_DEPTH_BUFFER_BIT|GL_COLOR_BUFFER_BIT);
+	glEnable(GL_DEPTH_TEST);
 
 	// Texture mapping setting for Microsoft's OpenGL implementation
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
@@ -95,16 +129,12 @@ void init(void) // All Setup For OpenGL Goes Here
 	glPixelStorei(GL_UNPACK_SKIP_ROWS, 0);
 	glPixelStorei(GL_UNPACK_SKIP_PIXELS, 0);
 
-	// Texture mapping parameters for filter and repeatance
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);  
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-
 	/* Add code here to initialize lighting, read bitmap images, initialize different GLU geometry
 	* use glLight, TextureLoadBitmap, gluNewQuadric...etc
 	*/
+	loadImageTexture("ground.bmp", texture_ground);
+	loadImageTexture("car.bmp", texture_car);
+	loadImageTexture("wheel.bmp", texture_wheel);
 }
 
 // Move camera to specified position without changing view angle
@@ -116,7 +146,7 @@ void moveCameraTo(float newCamX, float newCamY, float newCamZ)
 	cam_X = newCamX;
 	cam_Y = newCamY;
 	cam_Z = newCamZ;
-	printf("moveCameraTo: %f, %f, %f; %f, %f, %f\n", cam_X,cam_Y,cam_Z, cam_ViewX, cam_ViewY, cam_ViewZ);
+	//printf("moveCameraTo: %f, %f, %f; %f, %f, %f\n", cam_X,cam_Y,cam_Z, cam_ViewX, cam_ViewY, cam_ViewZ);
 }
 
 // Move camera by magnitude of movement
@@ -159,9 +189,29 @@ void drawOrigin()
 void drawGround()
 {
 	glPushMatrix();
-	glScalef(groundWidth, 0.1f, groundLong);
-	glColor3f(0.55f, 0.65f, 0.8f);
-	glutSolidCube(1.0f);
+	glColor3f(1.0f, 1.0f, 1.0f);
+	glClearColor(0,0,0,0);
+	glEnable(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, texture_ground.tex);
+
+	float ratio = groundLong/groundWidth;
+	float scale = 0.5f;
+
+	glBegin(GL_QUAD_STRIP);
+	{
+		glTexCoord2f(0.0f, 0.0f);
+		glVertex3f(-groundWidth/2, 0.0, 0);
+		glTexCoord2f(scale, 0.0f);
+		glVertex3f(groundWidth/2, 0.0, 0);
+
+		glTexCoord2f(0.0f, scale*ratio);
+		glVertex3f(-groundWidth/2, 0.0, -groundLong/2);
+		glTexCoord2f(scale, scale*ratio);
+		glVertex3f(groundWidth/2, 0.0, -groundLong/2);
+	}
+	glEnd();
+	glDisable(GL_TEXTURE_2D);
+
 	glPopMatrix();
 }
 
