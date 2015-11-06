@@ -165,38 +165,48 @@ void drawOrigin()
 {
 	glPushMatrix();
 	glColor3f(1.0f, 1.0f, 0.0f);
-	glBegin(GL_LINES);
-	{
-		glVertex4f(0.0f, 0.0f, 0.0f, 1.0f);
-		glVertex4f(0.0f, 1.0f, 0.0f, 0.0f);
-	}
-	glEnd();
+
+	// X-axis
 	glBegin(GL_LINES);
 	{
 		glVertex4f(0.0f, 0.0f, 0.0f, 1.0f);
 		glVertex4f(1.0f, 0.0f, 0.0f, 0.0f);
 	}
 	glEnd();
+
+	// Y-axis
+	glBegin(GL_LINES);
+	{
+		glVertex4f(0.0f, 0.0f, 0.0f, 1.0f);
+		glVertex4f(0.0f, 1.0f, 0.0f, 0.0f);
+	}
+	glEnd();
+
+	// Z-axis
 	glBegin(GL_LINES);
 	{
 		glVertex4f(0.0f, 0.0f, 0.0f, 1.0f);
 		glVertex4f(0.0f, 0.0f, 1.0f, 0.0f);
 	}
 	glEnd();
+
 	glPopMatrix();
 }
 
 void drawGround()
 {
+	// Setup
 	glPushMatrix();
 	glColor3f(1.0f, 1.0f, 1.0f);
 	glClearColor(0,0,0,0);
 	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, texture_ground.tex);
 
+	// Maintain square tiles on floor
 	float ratio = groundLong/groundWidth;
 	float scale = 0.5f;
 
+	// Draw ground
 	glBegin(GL_QUAD_STRIP);
 	{
 		glTexCoord2f(0.0f, 0.0f);
@@ -210,8 +220,9 @@ void drawGround()
 		glVertex3f(groundWidth/2, 0.0, -groundLong/2);
 	}
 	glEnd();
-	glDisable(GL_TEXTURE_2D);
 
+	// Clean up
+	glDisable(GL_TEXTURE_2D);
 	glPopMatrix();
 }
 
@@ -245,29 +256,35 @@ void drawWheel(float offsetX, float offsetZ, float radius, float width)
 	const int stack = 100.0;
 	const GLbyte grey = 30;
 
+	// Setup
 	glPushMatrix();
 	glColor3b(grey, grey, grey);
 	glClearColor(0,0,0,0);
+
+	// Recenter
 	glTranslatef(offsetX, 0, offsetZ-width/2.0);
 
+	// Draw tyre
 	gluCylinder(texture_wheel.quad, radius, radius, width, slice, stack);
 
+	// Clear color and apply texture
 	glColor3f(1.0f, 1.0f, 1.0f);
 	glClearColor(0,0,0,0);
 	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, texture_wheel.tex);
 
+	// Draw two wheel covers
 	gluDisk(texture_wheel.quad, 0.0, radius, slice, stack);
 	glTranslatef(0.0, 0.0, width);
 	gluDisk(texture_wheel.quad, 0.0, radius, slice, stack);
 
+	// Clean up
 	glDisable(GL_TEXTURE_2D);
 	glPopMatrix();
 }
 
 void drawCar()
 {
-	static float angle = 0.0f;
 	const float carWidth = 50.0;
 	const float carLong = 100.0;
 	const float wheelRadius = 20.0;
@@ -275,6 +292,8 @@ void drawCar()
 
 	glPushMatrix();
 
+	// Car rotation animation for debugging, every update rotated by 1 degree
+	static float angle = 0.0f;
 	glRotatef(angle, 0, 1, 0);
 	angle += 1.0f;
 
