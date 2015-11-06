@@ -215,6 +215,54 @@ void drawGround()
 	glPopMatrix();
 }
 
+void drawWheel(float offsetX, float offsetZ, float radius, float width)
+{
+	const int slice = 100.0;
+	const int stack = 100.0;
+	const GLbyte grey = 30;
+
+	glPushMatrix();
+	glColor3b(grey, grey, grey);
+	glClearColor(0,0,0,0);
+	glTranslatef(offsetX, 0, offsetZ-width/2.0);
+
+	gluCylinder(texture_wheel.quad, radius, radius, width, slice, stack);
+
+	glColor3f(1.0f, 1.0f, 1.0f);
+	glClearColor(0,0,0,0);
+	glEnable(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, texture_wheel.tex);
+
+	gluDisk(texture_wheel.quad, 0.0, radius, slice, stack);
+	glTranslatef(0.0, 0.0, width);
+	gluDisk(texture_wheel.quad, 0.0, radius, slice, stack);
+
+	glDisable(GL_TEXTURE_2D);
+	glPopMatrix();
+}
+
+void drawCar()
+{
+	static float angle = 0.0f;
+	const float carWidth = 50.0;
+	const float carLong = 100.0;
+	const float wheelRadius = 20.0;
+	const float wheelWidth = 20.0;
+
+	glPushMatrix();
+
+	glRotatef(angle, 0, 1, 0);
+	angle += 1.0f;
+
+	// Draw 4 wheels
+	drawWheel(-carLong/2, -carWidth/2, wheelRadius, wheelWidth);
+	drawWheel(-carLong/2, carWidth/2, wheelRadius, wheelWidth);
+	drawWheel(carLong/2, -carWidth/2, wheelRadius, wheelWidth);
+	drawWheel(carLong/2, carWidth/2, wheelRadius, wheelWidth);
+
+	glPopMatrix();
+}
+
 void display(void) // Here's Where We Do All The Drawing
 {
 	/* clear the window color before drawing is performed */
@@ -241,6 +289,7 @@ void display(void) // Here's Where We Do All The Drawing
 	// Draw grounds and objects here
 	drawOrigin();
 	drawGround();
+	drawCar();
 
 	glFlush();
 	glutSwapBuffers();
