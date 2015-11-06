@@ -215,6 +215,30 @@ void drawGround()
 	glPopMatrix();
 }
 
+void drawCarBody()
+{
+	const float carBodyLong = 200.0f;
+	const float carBodyWidth = 25.0f;
+	const float carBodyCenter = -100.0f;
+	
+	glPushMatrix();
+
+	// Transform whole car body
+	glRotatef(90, 0.0f, 1.0f, 0.0f);
+	glScalef(1.0f, 0.5f, 1.0f);
+	glTranslatef(0.0, 0.0, carBodyCenter);
+
+	// Draw main car body
+	glColor3f(1.0f, 1.0f, 1.0f);
+	glClearColor(0,0,0,0);
+	glEnable(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, texture_car.tex);
+	gluCylinder(texture_car.quad, 0.0, carBodyWidth, carBodyLong, 20, 20);
+	glDisable(GL_TEXTURE_2D);
+
+	glPopMatrix();
+}
+
 void drawWheel(float offsetX, float offsetZ, float radius, float width)
 {
 	const int slice = 100.0;
@@ -253,6 +277,8 @@ void drawCar()
 
 	glRotatef(angle, 0, 1, 0);
 	angle += 1.0f;
+
+	drawCarBody();
 
 	// Draw 4 wheels
 	drawWheel(-carLong/2, -carWidth/2, wheelRadius, wheelWidth);
