@@ -16,6 +16,10 @@ const float PI = 3.14159265;
 int winWidth = 1000;
 int winHeight = 800;
 
+float carX(0.0f), carZ(0.0f);
+float carOrientation(0.0f);
+float wheelOrientation(0.0f);
+
 float keyboardCameraMoveSpeed(10.0);
 float mouseCameraMoveSpeed(0.5);
 float mouseCameraMoveDirection[2] = {0, 0};
@@ -250,7 +254,7 @@ void drawCarBody()
 	glPopMatrix();
 }
 
-void drawWheel(float offsetX, float offsetZ, float radius, float width)
+void drawWheel(float offsetX, float offsetZ, float radius, float width, float angle)
 {
 	const int slice = 100.0;
 	const int stack = 100.0;
@@ -263,6 +267,7 @@ void drawWheel(float offsetX, float offsetZ, float radius, float width)
 
 	// Recenter
 	glTranslatef(offsetX, 0, offsetZ-width/2.0);
+	glRotatef(angle, 0, 0, 1);
 
 	// Draw tyre
 	gluCylinder(texture_wheel.quad, radius, radius, width, slice, stack);
@@ -292,18 +297,16 @@ void drawCar()
 
 	glPushMatrix();
 
-	// Car rotation animation for debugging, every update rotated by 1 degree
-	static float angle = 0.0f;
-	glRotatef(angle, 0, 1, 0);
-	angle += 1.0f;
-
-	drawCarBody();
+	glTranslatef(0, wheelRadius, 0);
+	glRotatef(carOrientation - 90.0f, 0, 1, 0);
 
 	// Draw 4 wheels
-	drawWheel(-carLong/2, -carWidth/2, wheelRadius, wheelWidth);
-	drawWheel(-carLong/2, carWidth/2, wheelRadius, wheelWidth);
-	drawWheel(carLong/2, -carWidth/2, wheelRadius, wheelWidth);
-	drawWheel(carLong/2, carWidth/2, wheelRadius, wheelWidth);
+	drawWheel(-carLong/2, -carWidth/2, wheelRadius, wheelWidth, wheelOrientation);
+	drawWheel(-carLong/2, carWidth/2, wheelRadius, wheelWidth, wheelOrientation);
+	drawWheel(carLong/2, -carWidth/2, wheelRadius, wheelWidth, wheelOrientation);
+	drawWheel(carLong/2, carWidth/2, wheelRadius, wheelWidth, wheelOrientation);
+
+	drawCarBody();
 
 	glPopMatrix();
 }
