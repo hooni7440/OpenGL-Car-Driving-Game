@@ -40,7 +40,7 @@ GLfloat mat_diffuse[] = {0.8,0.2,0.5,1.0};
 GLfloat mat_specular[] = {1.0,1.0,1.0,1.0};
 GLfloat high_shininess[] = {100.0};
 
-float groundWidth(800.0), groundLong(18000.0);
+float groundWidth(896.0), groundLong(18000.0);
 
 struct image_texture
 {
@@ -133,14 +133,22 @@ void init(void) // All Setup For OpenGL Goes Here
 {
 	// Light 0 Settings
 	static GLfloat light0pos[] = {200.f, 100.f, 400.f, 0.f};
-	static GLfloat light0_mat1[] = {0.8, 0.8, 0.8, 1.f};
-	static GLfloat light0_diff1[] = {0.9, 0.9, 0.9, 1.f};
+	static GLfloat light0_mat1[] = {0.1, 0.1, 0.1, 1.f};
+	static GLfloat light0_diff1[] = {0.2, 0.2, 0.2, 1.f};
 	glLightfv(GL_LIGHT0, GL_POSITION, light0pos);
 	glLightfv(GL_LIGHT0, GL_AMBIENT, light0_mat1);
 	glLightfv(GL_LIGHT0, GL_DIFFUSE, light0_diff1);
 
+	// Car Light Settings
+	static GLfloat light1_mat1[] = {0.8, 0.8, 0.8, 1.f};
+	static GLfloat light1_diff1[] = {0.9, 0.9, 0.9, 1.f};
+	glLightf(GL_LIGHT1, GL_SPOT_CUTOFF, 45.0);
+	glLightfv(GL_LIGHT1, GL_AMBIENT, light1_mat1);
+	glLightfv(GL_LIGHT1, GL_DIFFUSE, light1_diff1);
+
 	glEnable(GL_LIGHTING);
 	glEnable(GL_LIGHT0);
+	glEnable(GL_LIGHT1);
 
 	glEnable(GL_NORMALIZE);
 
@@ -233,23 +241,39 @@ void drawGround()
 
 	// Maintain square tiles on floor
 	float scale = 4.0;
-	float ratioW = groundWidth / texture_ground.w;
+	float ratioW = groundWidth / texture_ground.w / 2;
 	float ratioL = groundLong / texture_ground.h;
+	const int tileSize = 16;
+	const int tileHorizontalCount = groundWidth / tileSize;
+	const int tileVerticalCount = groundLong / tileSize;
 
 	// Draw ground
-	glBegin(GL_QUAD_STRIP);
+	for (int x = -tileHorizontalCount/2; x <=tileHorizontalCount/2; x++)
 	{
-		glTexCoord2f(0.0f, 0.0f);
-		glVertex3f(-groundWidth/2, 0.0, 0);
-		glTexCoord2f(ratioW / scale, 0.0f);
-		glVertex3f(groundWidth/2, 0.0, 0);
+		for(int y = -tileVerticalCount/2; y <= tileVerticalCount/2; y++)
+		{
+			float startX = 0.125 * x;
+			float endX = 0.125 * (x+1);
+			float startY = 0.125 * y;
+			float endY = 0.125 * (y+1);
 
-		glTexCoord2f(0.0f, ratioL / scale);
-		glVertex3f(-groundWidth/2, 0.0, -groundLong/2);
-		glTexCoord2f(ratioW / scale, ratioL / scale);
-		glVertex3f(groundWidth/2, 0.0, -groundLong/2);
+			glBegin(GL_QUADS);
+			{
+				glTexCoord2f(startX, endY);
+				glVertex3f(x*tileSize, 0.0, -y*tileSize);
+
+				glTexCoord2f(startX, startY);
+				glVertex3f(x*tileSize, 0.0, -(y+1)*tileSize);
+				
+				glTexCoord2f(endX, startY);
+				glVertex3f((x+1)*tileSize, 0.0, -(y+1)*tileSize);
+				
+				glTexCoord2f(endX, endY);
+				glVertex3f((x+1)*tileSize, 0.0, -y*tileSize);
+			}
+			glEnd();
+		}
 	}
-	glEnd();
 
 	// Clean up
 	glDisable(GL_TEXTURE_2D);
@@ -314,6 +338,29 @@ void drawWheel(float offsetX, float offsetZ, float radius, float width, float an
 	glPopMatrix();
 }
 
+void updateCarLight()
+{
+	static GLfloat light1pos[] = {200, wheelRadius, 0.0};
+	static GLfloat light1_spot[] = {-200.0, wheelRadius, 0.0};
+	static float angle = 0.0;
+
+	glPushMatrix();
+	glLineWidth(10.0);
+	glColor4f(1.0, 1.0, 1.0, 0.1);
+	glTranslatef(0, 10, 0);
+	glRotatef(90, 0, 0, 1);
+	glRotatef(90, 0, 1, 0);
+	glRotatef(angle, 0, 0, 1);
+	angle += 1;
+
+	//gluDisk(texture_car.quad, 0.0, 500.0, 1000.0, 1000.0);
+	glPopMatrix();
+
+	glTranslatef(-100.0, 0.0, 0.0);
+	glLightfv(GL_LIGHT1, GL_POSITION, light1pos);
+	glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, light1_spot);
+}
+
 void drawCar()
 {
 	const float carWidth = 50.0;
@@ -333,6 +380,7 @@ void drawCar()
 	drawWheel(carLong/2, carWidth/2, wheelRadius, wheelWidth, wheelOrientation);
 
 	drawCarBody();
+	updateCarLight();
 
 	glPopMatrix();
 }
@@ -477,12 +525,12 @@ void timer(int t)
 		velocity = 0.0f;
 	}
 
-	printf("%f, %f, V: %f, Aa: %f, Ra: %f, Wheel: %f\n", carX, carZ, velocity, acceleration, resultingAcceleration, wheelOrientation);
+	printf("[%d] %f, %f, V: %f, Aa: %f, Ra: %f, Wheel: %f\n", t, carX, carZ, velocity, acceleration, resultingAcceleration, wheelOrientation);
 	moveCameraTo(carX, 350, carZ + 800.0f);
 
 	// display after update and reset timer
 	glutPostRedisplay();
-    glutTimerFunc(10, timer, 1);
+    glutTimerFunc(10, timer, 10);
 }
 
 void drag(int ix, int iy)
@@ -510,7 +558,7 @@ void main(int argc, char** argv)
 	glutSpecialFunc(keyspecial);
 	glutSpecialUpFunc(keyspecialup);
 	// call timer function every 10 ms
-	glutTimerFunc(10, timer, 1);
+	glutTimerFunc(10, timer, 10);
 	glutMouseFunc(mouseclick);
 	glutMotionFunc(drag);
 	init();	/*not GLUT call, initialize several parameters */
