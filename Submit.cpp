@@ -400,10 +400,10 @@ void keyspecial(int key, int x, int y)
 			acceleration = -keyboardAcceleration;
 			break;
 		case GLUT_KEY_LEFT: // move left
-			moveCameraBy(-keyboardCameraMoveSpeed, 0, 0);
+			carOrientation += 10.0f;
 			break;
 		case GLUT_KEY_RIGHT: // move right
-			moveCameraBy(keyboardCameraMoveSpeed, 0, 0);
+			carOrientation -= 10.0f;
 			break;
 	}
 }
