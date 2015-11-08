@@ -26,13 +26,12 @@ const float keyboardAcceleration = 30000.0f;
 const float frictionalAcceleration = 10000.0f;
 
 float keyboardCameraMoveSpeed(10.0);
-float mouseCameraMoveSpeed(0.5);
-float mouseCameraMoveDirection[2] = {0, 0};
 
 bool isEnvLightOn(false);
 bool isCarLightOn(true);
 float light_X(-500), light_Y(300), light_Z(-1000);
 
+bool isFirstPersonCamera(false);
 float cam_X, cam_Y, cam_Z;
 float cam_ViewX, cam_ViewY(0.0), cam_ViewZ;
 const float defaultCamViewDeltaY(350.0f);
@@ -194,8 +193,16 @@ void moveCameraBy(float deltaX, float deltaY, float deltaZ)
 
 void updateCamera() 
 {
-	gluLookAt(cam_X,cam_Y,cam_Z, cam_ViewX, cam_ViewY, cam_ViewZ, 0, 1, 0);
-	moveCameraBy(mouseCameraMoveSpeed * mouseCameraMoveDirection[0], 0, mouseCameraMoveSpeed * mouseCameraMoveDirection[1]);
+	if (isFirstPersonCamera)
+	{
+		float forwardX = -sin(carOrientation * PI / 180.0f);
+		float forwardZ = -cos(carOrientation * PI / 180.0f);
+		gluLookAt(carX,wheelRadius,carZ, carX+forwardX, wheelRadius, carZ+forwardZ, 0, 1, 0);
+	}
+	else
+	{
+		gluLookAt(cam_X,cam_Y,cam_Z, cam_ViewX, cam_ViewY, cam_ViewZ, 0, 1, 0);
+	}
 }
 
 void updateLight()
@@ -561,6 +568,9 @@ void keyboard(unsigned char key, int x, int y)
 			break;
 		case 'c':
 			isCarLightOn = !isCarLightOn;
+			break;
+		case 'f':
+			isFirstPersonCamera = !isFirstPersonCamera;
 			break;
 	}
 }
