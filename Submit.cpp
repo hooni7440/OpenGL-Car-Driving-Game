@@ -19,6 +19,11 @@ int winHeight = 800;
 float carX(0.0f), carZ(0.0f);
 float carOrientation(0.0f);
 float wheelOrientation(0.0f);
+float acceleration(0.0f);
+float velocity(0.0f);
+const float wheelRadius = 20.0;
+const float keyboardAcceleration = 3000.0f;
+const float frictionalAcceleration = 200.0f;
 
 float keyboardCameraMoveSpeed(10.0);
 float mouseCameraMoveSpeed(0.5);
@@ -292,12 +297,12 @@ void drawCar()
 {
 	const float carWidth = 50.0;
 	const float carLong = 100.0;
-	const float wheelRadius = 20.0;
 	const float wheelWidth = 20.0;
 
 	glPushMatrix();
 
 	glTranslatef(0, wheelRadius, 0);
+	glTranslatef(carX, 0, carZ);
 	glRotatef(carOrientation - 90.0f, 0, 1, 0);
 
 	// Draw 4 wheels
@@ -368,10 +373,13 @@ void keyspecial(int key, int x, int y)
 	{
 		// car control
 		case GLUT_KEY_UP: // move front
-			moveCameraBy(0, 0, -keyboardCameraMoveSpeed);
+			acceleration = keyboardAcceleration;
+			printf("%f\n", acceleration);
+			//moveCameraBy(0, 0, -keyboardCameraMoveSpeed);
 			break;
 		case GLUT_KEY_DOWN: // move back
-			moveCameraBy(0, 0, keyboardCameraMoveSpeed);
+			acceleration = -keyboardAcceleration;
+			//moveCameraBy(0, 0, keyboardCameraMoveSpeed);
 			break;
 		case GLUT_KEY_LEFT: // move left
 			moveCameraBy(-keyboardCameraMoveSpeed, 0, 0);
@@ -391,8 +399,8 @@ void keyspecialup(int key, int x, int y)
 	{
 		// car control
 		case GLUT_KEY_UP: // move front
-			break;
 		case GLUT_KEY_DOWN: // move back
+			acceleration = 0.0f;
 			break;
 		case GLUT_KEY_LEFT: // move left
 			break;
@@ -426,6 +434,17 @@ void mousemove(int x, int y) // Handle the mouse movement events here
 void timer(int t)
 {
 	/* Add code here to update the velocity, acceleration, position and rotation of car and wheels */
+	float seconds = t / 1000.0f;
+	float resultingAcceleration = acceleration;
+	float movingDistance = 0.0f;
+
+	movingDistance = velocity * seconds + 0.5 * resultingAcceleration * seconds * seconds;
+	carX += (movingDistance * sin(carOrientation * PI / 180.0f));
+	carZ -= (movingDistance * cos(carOrientation * PI / 180.0f));
+	velocity += resultingAcceleration * seconds;
+	wheelOrientation += (movingDistance * 180.0f / PI / wheelRadius);
+
+	printf("%f, %f, V: %f, Aa: %f, Ra: %f, Wheel: %f\n", carX, carZ, velocity, acceleration, resultingAcceleration, wheelOrientation);
 
 	// display after update and reset timer
 	glutPostRedisplay();
