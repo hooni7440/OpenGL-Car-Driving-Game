@@ -16,11 +16,11 @@ const float PI = 3.14159265;
 int winWidth = 1000;
 int winHeight = 800;
 
-float carX(0.0f), carZ(0.0f);
-float carOrientation(0.0f);
-float wheelOrientation(0.0f);
-float acceleration(0.0f);
-float velocity(0.0f);
+float carX, carZ;
+float carOrientation;
+float wheelOrientation;
+float acceleration;
+float velocity;
 const float wheelRadius = 20.0;
 const float keyboardAcceleration = 30000.0f;
 const float frictionalAcceleration = 10000.0f;
@@ -31,8 +31,8 @@ float mouseCameraMoveDirection[2] = {0, 0};
 
 float light_X(-500), light_Y(300), light_Z(-1000);
 
-float cam_X(0), cam_Y(350), cam_Z(800);
-float cam_ViewX(0), cam_ViewY(0), cam_ViewZ(0);
+float cam_X, cam_Y, cam_Z;
+float cam_ViewX, cam_ViewY, cam_ViewZ;
 
 GLfloat mat_diffuse[] = {0.8,0.2,0.5,1.0};
 GLfloat mat_specular[] = {1.0,1.0,1.0,1.0};
@@ -111,6 +111,21 @@ void loadImageTexture(char *filename, image_texture &image_texture)
 	gluQuadricTexture(image_texture.quad, GL_TRUE);
 }
 
+void reset(void)
+{
+	carX = 0.0f;
+	carZ = 0.0f;
+	wheelOrientation = 0.0f;
+	acceleration = 0.0f;
+	velocity = 0.0f;
+	cam_X = 0.0f;
+	cam_Y = 350.0f;
+	cam_Z = 800.0f;
+	cam_ViewX = 0.0f;
+	cam_ViewY = 0.0f;
+	cam_ViewZ = 0.0f;
+}
+
 void init(void) // All Setup For OpenGL Goes Here
 {
 	// Light 0 Settings
@@ -144,6 +159,8 @@ void init(void) // All Setup For OpenGL Goes Here
 	loadImageTexture("ground.bmp", texture_ground);
 	loadImageTexture("car.bmp", texture_car);
 	loadImageTexture("wheel.bmp", texture_wheel);
+
+	reset();
 }
 
 // Move camera to specified position without changing view angle
@@ -417,6 +434,7 @@ void keyboard(unsigned char key, int x, int y)
 	switch (key) 
 	{
 		case 'r': // Reset all parameters
+			reset();
 			break;
 	}
 }
