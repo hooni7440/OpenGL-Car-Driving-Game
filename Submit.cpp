@@ -16,20 +16,31 @@ const float PI = 3.14159265;
 int winWidth = 1000;
 int winHeight = 800;
 
+float carX, carZ;
+float carOrientation;
+float wheelOrientation;
+float acceleration;
+float velocity;
+const float wheelRadius = 20.0;
+const float keyboardAcceleration = 30000.0f;
+const float frictionalAcceleration = 10000.0f;
+
 float keyboardCameraMoveSpeed(10.0);
 float mouseCameraMoveSpeed(0.5);
 float mouseCameraMoveDirection[2] = {0, 0};
 
 float light_X(-500), light_Y(300), light_Z(-1000);
 
-float cam_X(0), cam_Y(350), cam_Z(800);
-float cam_ViewX(0), cam_ViewY(0), cam_ViewZ(0);
+float cam_X, cam_Y, cam_Z;
+float cam_ViewX, cam_ViewY(0.0), cam_ViewZ;
+const float defaultCamViewDeltaY(350.0f);
+const float defaultCamViewDeltaZ(800.0f);
 
 GLfloat mat_diffuse[] = {0.8,0.2,0.5,1.0};
 GLfloat mat_specular[] = {1.0,1.0,1.0,1.0};
 GLfloat high_shininess[] = {100.0};
 
-float groundWidth(160.0), groundLong(1800.0);
+float groundWidth(800.0), groundLong(18000.0);
 
 struct image_texture
 {
@@ -102,6 +113,22 @@ void loadImageTexture(char *filename, image_texture &image_texture)
 	gluQuadricTexture(image_texture.quad, GL_TRUE);
 }
 
+void reset(void)
+{
+	carX = 0.0f;
+	carZ = 0.0f;
+	carOrientation = 0.0f;
+	wheelOrientation = 0.0f;
+	acceleration = 0.0f;
+	velocity = 0.0f;
+	cam_X = 0.0f;
+	cam_Y = defaultCamViewDeltaY;
+	cam_Z = defaultCamViewDeltaZ;
+	cam_ViewX = 0.0f;
+	cam_ViewY = 0.0f;
+	cam_ViewZ = 0.0f;
+}
+
 void init(void) // All Setup For OpenGL Goes Here
 {
 	// Light 0 Settings
@@ -135,6 +162,8 @@ void init(void) // All Setup For OpenGL Goes Here
 	loadImageTexture("ground.bmp", texture_ground);
 	loadImageTexture("car.bmp", texture_car);
 	loadImageTexture("wheel.bmp", texture_wheel);
+
+	reset();
 }
 
 // Move camera to specified position without changing view angle
@@ -203,20 +232,21 @@ void drawGround()
 	glBindTexture(GL_TEXTURE_2D, texture_ground.tex);
 
 	// Maintain square tiles on floor
-	float ratio = groundLong/groundWidth;
-	float scale = 0.5f;
+	float scale = 4.0;
+	float ratioW = groundWidth / texture_ground.w;
+	float ratioL = groundLong / texture_ground.h;
 
 	// Draw ground
 	glBegin(GL_QUAD_STRIP);
 	{
 		glTexCoord2f(0.0f, 0.0f);
 		glVertex3f(-groundWidth/2, 0.0, 0);
-		glTexCoord2f(scale, 0.0f);
+		glTexCoord2f(ratioW / scale, 0.0f);
 		glVertex3f(groundWidth/2, 0.0, 0);
 
-		glTexCoord2f(0.0f, scale*ratio);
+		glTexCoord2f(0.0f, ratioL / scale);
 		glVertex3f(-groundWidth/2, 0.0, -groundLong/2);
-		glTexCoord2f(scale, scale*ratio);
+		glTexCoord2f(ratioW / scale, ratioL / scale);
 		glVertex3f(groundWidth/2, 0.0, -groundLong/2);
 	}
 	glEnd();
@@ -299,7 +329,7 @@ void drawCarBody()
 	glPopMatrix();
 }
 
-void drawWheel(float offsetX, float offsetZ, float radius, float width)
+void drawWheel(float offsetX, float offsetZ, float radius, float width, float angle)
 {
 	const int slice = 100.0;
 	const int stack = 100.0;
@@ -312,6 +342,7 @@ void drawWheel(float offsetX, float offsetZ, float radius, float width)
 
 	// Recenter
 	glTranslatef(offsetX, 0, offsetZ-width/2.0);
+	glRotatef(angle, 0, 0, 1);
 
 	// Draw tyre
 	gluCylinder(texture_wheel.quad, radius, radius, width, slice, stack);
@@ -336,23 +367,21 @@ void drawCar()
 {
 	const float carWidth = 55.0;
 	const float carLong = 100.0;
-	const float wheelRadius = 20.0;
 	const float wheelWidth = 20.0;
 
 	glPushMatrix();
 
-	// Car rotation animation for debugging, every update rotated by 1 degree
-	static float angle = 0.0f;
-	glRotatef(angle, 0, 1, 0);
-	angle += 1.0f;
-
-	drawCarBody();
+	glTranslatef(0, wheelRadius, 0);
+	glTranslatef(carX, 0, carZ);
+	glRotatef(carOrientation - 90.0f, 0, 1, 0);
 
 	// Draw 4 wheels
-	drawWheel(-carLong/2, -carWidth/2.3, wheelRadius, wheelWidth);
-	drawWheel(-carLong/2, carWidth/2.3, wheelRadius, wheelWidth);
-	drawWheel(carLong/2, -carWidth/2, wheelRadius, wheelWidth);
-	drawWheel(carLong/2, carWidth/2, wheelRadius, wheelWidth);
+	drawWheel(-carLong/2, -carWidth/2, wheelRadius, wheelWidth, wheelOrientation);
+	drawWheel(-carLong/2, carWidth/2, wheelRadius, wheelWidth, wheelOrientation);
+	drawWheel(carLong/2, -carWidth/2, wheelRadius, wheelWidth, wheelOrientation);
+	drawWheel(carLong/2, carWidth/2, wheelRadius, wheelWidth, wheelOrientation);
+
+	drawCarBody();
 
 	glPopMatrix();
 }
@@ -414,16 +443,16 @@ void keyspecial(int key, int x, int y)
 	{
 		// car control
 		case GLUT_KEY_UP: // move front
-			moveCameraBy(0, 0, -keyboardCameraMoveSpeed);
+			acceleration = keyboardAcceleration;
 			break;
 		case GLUT_KEY_DOWN: // move back
-			moveCameraBy(0, 0, keyboardCameraMoveSpeed);
+			acceleration = -keyboardAcceleration;
 			break;
 		case GLUT_KEY_LEFT: // move left
-			moveCameraBy(-keyboardCameraMoveSpeed, 0, 0);
+			carOrientation += 10.0f;
 			break;
 		case GLUT_KEY_RIGHT: // move right
-			moveCameraBy(keyboardCameraMoveSpeed, 0, 0);
+			carOrientation -= 10.0f;
 			break;
 	}
 }
@@ -437,8 +466,8 @@ void keyspecialup(int key, int x, int y)
 	{
 		// car control
 		case GLUT_KEY_UP: // move front
-			break;
 		case GLUT_KEY_DOWN: // move back
+			acceleration = 0.0f;
 			break;
 		case GLUT_KEY_LEFT: // move left
 			break;
@@ -455,6 +484,7 @@ void keyboard(unsigned char key, int x, int y)
 	switch (key) 
 	{
 		case 'r': // Reset all parameters
+			reset();
 			break;
 	}
 }
@@ -472,6 +502,32 @@ void mousemove(int x, int y) // Handle the mouse movement events here
 void timer(int t)
 {
 	/* Add code here to update the velocity, acceleration, position and rotation of car and wheels */
+	float seconds = t / 1000.0f;
+	float resultingAcceleration = acceleration;
+	float movingDistance = 0.0f;
+
+	if (velocity > 0.01f)
+	{
+		resultingAcceleration -= frictionalAcceleration;
+	}
+	else if (velocity < -0.01f)
+	{
+		resultingAcceleration += frictionalAcceleration;
+	}
+
+	movingDistance = velocity * seconds + 0.5 * resultingAcceleration * seconds * seconds;
+	carX -= (movingDistance * sin(carOrientation * PI / 180.0f));
+	carZ -= (movingDistance * cos(carOrientation * PI / 180.0f));
+	wheelOrientation += (movingDistance * 180.0f / PI / wheelRadius);
+	
+	velocity += resultingAcceleration * seconds;
+	if (fabs(velocity) < 0.01f)
+	{
+		velocity = 0.0f;
+	}
+
+	printf("%f, %f, V: %f, Aa: %f, Ra: %f, Wheel: %f\n", carX, carZ, velocity, acceleration, resultingAcceleration, wheelOrientation);
+	moveCameraTo(carX, 350, carZ + 800.0f);
 
 	// display after update and reset timer
 	glutPostRedisplay();
