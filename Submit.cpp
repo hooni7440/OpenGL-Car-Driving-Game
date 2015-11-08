@@ -40,7 +40,7 @@ GLfloat mat_diffuse[] = {0.8,0.2,0.5,1.0};
 GLfloat mat_specular[] = {1.0,1.0,1.0,1.0};
 GLfloat high_shininess[] = {100.0};
 
-float groundWidth(160.0), groundLong(1800.0);
+float groundWidth(800.0), groundLong(18000.0);
 
 struct image_texture
 {
@@ -117,6 +117,7 @@ void reset(void)
 {
 	carX = 0.0f;
 	carZ = 0.0f;
+	carOrientation = 0.0f;
 	wheelOrientation = 0.0f;
 	acceleration = 0.0f;
 	velocity = 0.0f;
@@ -231,20 +232,21 @@ void drawGround()
 	glBindTexture(GL_TEXTURE_2D, texture_ground.tex);
 
 	// Maintain square tiles on floor
-	float ratio = groundLong/groundWidth;
-	float scale = 0.5f;
+	float scale = 4.0;
+	float ratioW = groundWidth / texture_ground.w;
+	float ratioL = groundLong / texture_ground.h;
 
 	// Draw ground
 	glBegin(GL_QUAD_STRIP);
 	{
 		glTexCoord2f(0.0f, 0.0f);
 		glVertex3f(-groundWidth/2, 0.0, 0);
-		glTexCoord2f(scale, 0.0f);
+		glTexCoord2f(ratioW / scale, 0.0f);
 		glVertex3f(groundWidth/2, 0.0, 0);
 
-		glTexCoord2f(0.0f, scale*ratio);
+		glTexCoord2f(0.0f, ratioL / scale);
 		glVertex3f(-groundWidth/2, 0.0, -groundLong/2);
-		glTexCoord2f(scale, scale*ratio);
+		glTexCoord2f(ratioW / scale, ratioL / scale);
 		glVertex3f(groundWidth/2, 0.0, -groundLong/2);
 	}
 	glEnd();
@@ -393,12 +395,9 @@ void keyspecial(int key, int x, int y)
 		// car control
 		case GLUT_KEY_UP: // move front
 			acceleration = keyboardAcceleration;
-			printf("%f\n", acceleration);
-			//moveCameraBy(0, 0, -keyboardCameraMoveSpeed);
 			break;
 		case GLUT_KEY_DOWN: // move back
 			acceleration = -keyboardAcceleration;
-			//moveCameraBy(0, 0, keyboardCameraMoveSpeed);
 			break;
 		case GLUT_KEY_LEFT: // move left
 			moveCameraBy(-keyboardCameraMoveSpeed, 0, 0);
@@ -468,7 +467,7 @@ void timer(int t)
 	}
 
 	movingDistance = velocity * seconds + 0.5 * resultingAcceleration * seconds * seconds;
-	carX += (movingDistance * sin(carOrientation * PI / 180.0f));
+	carX -= (movingDistance * sin(carOrientation * PI / 180.0f));
 	carZ -= (movingDistance * cos(carOrientation * PI / 180.0f));
 	wheelOrientation += (movingDistance * 180.0f / PI / wheelRadius);
 	
