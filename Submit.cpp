@@ -29,6 +29,8 @@ float keyboardCameraMoveSpeed(10.0);
 float mouseCameraMoveSpeed(0.5);
 float mouseCameraMoveDirection[2] = {0, 0};
 
+bool isEnvLightOn(false);
+bool isCarLightOn(true);
 float light_X(-500), light_Y(300), light_Z(-1000);
 
 float cam_X, cam_Y, cam_Z;
@@ -133,7 +135,7 @@ void init(void) // All Setup For OpenGL Goes Here
 {
 	// Light 0 Settings
 	static GLfloat light0pos[] = {200.f, 100.f, 400.f, 0.f};
-	static GLfloat light0_mat1[] = {0.1, 0.1, 0.1, 1.f};
+	static GLfloat light0_mat1[] = {0.3, 0.3, 0.3, 1.f};
 	static GLfloat light0_diff1[] = {0.2, 0.2, 0.2, 1.f};
 	glLightfv(GL_LIGHT0, GL_POSITION, light0pos);
 	glLightfv(GL_LIGHT0, GL_AMBIENT, light0_mat1);
@@ -147,8 +149,6 @@ void init(void) // All Setup For OpenGL Goes Here
 	glLightfv(GL_LIGHT1, GL_DIFFUSE, light1_diff1);
 
 	glEnable(GL_LIGHTING);
-	glEnable(GL_LIGHT0);
-	glEnable(GL_LIGHT1);
 
 	glEnable(GL_NORMALIZE);
 
@@ -196,6 +196,27 @@ void updateCamera()
 {
 	gluLookAt(cam_X,cam_Y,cam_Z, cam_ViewX, cam_ViewY, cam_ViewZ, 0, 1, 0);
 	moveCameraBy(mouseCameraMoveSpeed * mouseCameraMoveDirection[0], 0, mouseCameraMoveSpeed * mouseCameraMoveDirection[1]);
+}
+
+void updateLight()
+{
+	if (isEnvLightOn)
+	{
+		glEnable(GL_LIGHT0);
+	}
+	else
+	{
+		glDisable(GL_LIGHT0);
+	}
+
+	if (isCarLightOn)
+	{
+		glEnable(GL_LIGHT1);
+	}
+	else
+	{
+		glDisable(GL_LIGHT1);
+	}
 }
 
 void drawOrigin()
@@ -333,7 +354,7 @@ void drawCarBody()
 	//glDisable(GL_TEXTURE_2D);
 
 	glPushMatrix();
-	glColor3f(1.0f, 0.0f, 0.0f);
+	glColor3f(1.0f, 0.8f, 0.8f);
 	glTranslatef(0.0, 40.0, carBodyLong/1.5+carBodyCenter);
 	glRotatef(80, 1.0f, 0.0f, 0.0f);
 	glScalef(0.8f, 2.5f, 1.0f);
@@ -455,6 +476,7 @@ void display(void) // Here's Where We Do All The Drawing
 
 	glLoadIdentity();
 	updateCamera();
+	updateLight();
 
 	// TODO:
 	// Draw grounds and objects here
@@ -533,6 +555,12 @@ void keyboard(unsigned char key, int x, int y)
 	{
 		case 'r': // Reset all parameters
 			reset();
+			break;
+		case 'e':
+			isEnvLightOn = !isEnvLightOn;
+			break;
+		case 'c':
+			isCarLightOn = !isCarLightOn;
 			break;
 	}
 }
