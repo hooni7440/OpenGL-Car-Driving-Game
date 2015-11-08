@@ -32,7 +32,9 @@ float mouseCameraMoveDirection[2] = {0, 0};
 float light_X(-500), light_Y(300), light_Z(-1000);
 
 float cam_X, cam_Y, cam_Z;
-float cam_ViewX, cam_ViewY, cam_ViewZ;
+float cam_ViewX, cam_ViewY(0.0), cam_ViewZ;
+const float defaultCamViewDeltaY(350.0f);
+const float defaultCamViewDeltaZ(800.0f);
 
 GLfloat mat_diffuse[] = {0.8,0.2,0.5,1.0};
 GLfloat mat_specular[] = {1.0,1.0,1.0,1.0};
@@ -119,8 +121,8 @@ void reset(void)
 	acceleration = 0.0f;
 	velocity = 0.0f;
 	cam_X = 0.0f;
-	cam_Y = 350.0f;
-	cam_Z = 800.0f;
+	cam_Y = defaultCamViewDeltaY;
+	cam_Z = defaultCamViewDeltaZ;
 	cam_ViewX = 0.0f;
 	cam_ViewY = 0.0f;
 	cam_ViewZ = 0.0f;
@@ -477,6 +479,7 @@ void timer(int t)
 	}
 
 	printf("%f, %f, V: %f, Aa: %f, Ra: %f, Wheel: %f\n", carX, carZ, velocity, acceleration, resultingAcceleration, wheelOrientation);
+	moveCameraTo(carX, 350, carZ + 800.0f);
 
 	// display after update and reset timer
 	glutPostRedisplay();
