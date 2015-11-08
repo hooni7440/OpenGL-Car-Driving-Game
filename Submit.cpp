@@ -602,9 +602,16 @@ void timer(int t)
 	}
 
 	movingDistance = velocity * seconds + 0.5 * resultingAcceleration * seconds * seconds;
-	carX -= (movingDistance * sin(carOrientation * PI / 180.0f));
-	carZ -= (movingDistance * cos(carOrientation * PI / 180.0f));
 	wheelOrientation += (movingDistance * 180.0f / PI / wheelRadius);
+	float newCarX = carX - (movingDistance * sin(carOrientation * PI / 180.0f));
+	float newCarZ = carZ - (movingDistance * cos(carOrientation * PI / 180.0f));
+
+	if((newCarX > -groundWidth/2 && newCarX < groundWidth/2) 
+		&& (newCarZ > -groundLong/2 && newCarZ < groundLong/2))
+	{
+		carX = newCarX;
+		carZ = newCarZ;
+	}
 	
 	velocity += resultingAcceleration * seconds;
 	if (fabs(velocity) < 0.01f)
