@@ -237,15 +237,64 @@ void drawCarBody()
 	// Transform whole car body
 	glRotatef(90, 0.0f, 1.0f, 0.0f);
 	glScalef(1.0f, 0.5f, 1.0f);
-	glTranslatef(0.0, 0.0, carBodyCenter);
 
 	// Draw main car body
+	glPushMatrix();
+	glTranslatef(0.0, 0.0, carBodyCenter);
 	glColor3f(1.0f, 1.0f, 1.0f);
 	glClearColor(0,0,0,0);
 	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, texture_car.tex);
-	gluCylinder(texture_car.quad, 0.0, carBodyWidth, carBodyLong, 20, 20);
+	gluCylinder(texture_car.quad, 15.0, carBodyWidth, carBodyLong, 5, 20);
+	//back cover
+	glPushMatrix();
+	glTranslatef(0.0, 0.0, carBodyLong);
+	gluDisk(texture_car.quad, 0.0, carBodyWidth, 5, 5);
+	glPopMatrix();
+	//front cover
+	glPushMatrix();
+	glScalef(1.0f, 0.3f, 1.0f);
+	gluDisk(texture_car.quad, 0.0, 40, 8, 5);
+	glPopMatrix();
+	glPopMatrix();
+
+	glPushMatrix();
+	glScalef(1.0f, 0.7f, 1.0f);
+	glRotatef(180, 0.0f, 0.0f, 1.0f);
+	glTranslatef(0.0, -60.0, carBodyLong+carBodyCenter-15);
+	//triangle
+	glPushMatrix();
+	gluDisk(texture_car.quad, 0.0, 60, 3, 5);
+	glPopMatrix();
+	//triangle2
+	glPushMatrix();
+	glTranslatef(0.0, 0.0, 15.0);
+	gluDisk(texture_car.quad, 0.0, 50, 3, 5);
+	glPopMatrix();
+	//tripezium
+	glPushMatrix();
+	gluCylinder(texture_car.quad, 60.0, 50.0, 15.0, 3, 20);
+	glPopMatrix();
+	glPopMatrix();
+	//glDisable(GL_TEXTURE_2D);
+
+	glPushMatrix();
+	glColor3f(1.0f, 0.0f, 0.0f);
+	glTranslatef(0.0, 40.0, carBodyLong/1.5+carBodyCenter);
+	glRotatef(80, 1.0f, 0.0f, 0.0f);
+	glScalef(0.8f, 2.5f, 1.0f);
+	//cover
+	glPushMatrix();
+	glTranslatef(0.0, 0.0, 0.0);
+	gluDisk(texture_car.quad, 0.0, 16, 7, 5);
+	glPopMatrix();
+	//petrahedran
+	glPushMatrix();
+	gluCylinder(texture_car.quad, 16.0, carBodyWidth, carBodyLong/5, 7, 20);
+	glPopMatrix();
+	glPopMatrix();
 	glDisable(GL_TEXTURE_2D);
+
 
 	glPopMatrix();
 }
@@ -285,7 +334,7 @@ void drawWheel(float offsetX, float offsetZ, float radius, float width)
 
 void drawCar()
 {
-	const float carWidth = 50.0;
+	const float carWidth = 55.0;
 	const float carLong = 100.0;
 	const float wheelRadius = 20.0;
 	const float wheelWidth = 20.0;
@@ -300,8 +349,8 @@ void drawCar()
 	drawCarBody();
 
 	// Draw 4 wheels
-	drawWheel(-carLong/2, -carWidth/2, wheelRadius, wheelWidth);
-	drawWheel(-carLong/2, carWidth/2, wheelRadius, wheelWidth);
+	drawWheel(-carLong/2, -carWidth/2.3, wheelRadius, wheelWidth);
+	drawWheel(-carLong/2, carWidth/2.3, wheelRadius, wheelWidth);
 	drawWheel(carLong/2, -carWidth/2, wheelRadius, wheelWidth);
 	drawWheel(carLong/2, carWidth/2, wheelRadius, wheelWidth);
 
