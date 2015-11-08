@@ -22,8 +22,8 @@ float wheelOrientation(0.0f);
 float acceleration(0.0f);
 float velocity(0.0f);
 const float wheelRadius = 20.0;
-const float keyboardAcceleration = 3000.0f;
-const float frictionalAcceleration = 200.0f;
+const float keyboardAcceleration = 30000.0f;
+const float frictionalAcceleration = 10000.0f;
 
 float keyboardCameraMoveSpeed(10.0);
 float mouseCameraMoveSpeed(0.5);
@@ -438,11 +438,25 @@ void timer(int t)
 	float resultingAcceleration = acceleration;
 	float movingDistance = 0.0f;
 
+	if (velocity > 0.01f)
+	{
+		resultingAcceleration -= frictionalAcceleration;
+	}
+	else if (velocity < -0.01f)
+	{
+		resultingAcceleration += frictionalAcceleration;
+	}
+
 	movingDistance = velocity * seconds + 0.5 * resultingAcceleration * seconds * seconds;
 	carX += (movingDistance * sin(carOrientation * PI / 180.0f));
 	carZ -= (movingDistance * cos(carOrientation * PI / 180.0f));
-	velocity += resultingAcceleration * seconds;
 	wheelOrientation += (movingDistance * 180.0f / PI / wheelRadius);
+	
+	velocity += resultingAcceleration * seconds;
+	if (fabs(velocity) < 0.01f)
+	{
+		velocity = 0.0f;
+	}
 
 	printf("%f, %f, V: %f, Aa: %f, Ra: %f, Wheel: %f\n", carX, carZ, velocity, acceleration, resultingAcceleration, wheelOrientation);
 
