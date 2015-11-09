@@ -560,6 +560,9 @@ void keyboard(unsigned char key, int x, int y)
 
 	switch (key) 
 	{
+		case '\033'://press 'esc' to quit
+			exit(0);
+			break;	
 		case 'r': // Reset all parameters
 			reset();
 			break;
