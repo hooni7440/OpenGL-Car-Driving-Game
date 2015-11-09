@@ -1,3 +1,6 @@
+// Name: Yung Man Lee
+// SID: 1155032377
+
 // Ass2.cpp : Defines the entry point for the console application.
 //
 
@@ -200,7 +203,7 @@ void updateCamera()
 		gluLookAt(carX,wheelRadius,carZ, carX+forwardX, wheelRadius, carZ+forwardZ, 0, 1, 0);
 	}
 	else
-	{f
+	{
 		gluLookAt(cam_X,cam_Y,cam_Z, cam_ViewX, cam_ViewY, cam_ViewZ, 0, 1, 0);
 	}
 }
@@ -616,7 +619,7 @@ void display(void) // Here's Where We Do All The Drawing
 
 	// TODO:
 	// Draw grounds and objects here
-	drawOrigin();
+	//drawOrigin();
 	drawGround();
 	drawFinish();
 	drawBlocks();
