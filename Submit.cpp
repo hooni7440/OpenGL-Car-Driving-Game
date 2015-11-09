@@ -258,6 +258,63 @@ void drawOrigin()
 	glPopMatrix();
 }
 
+void drawFinish()
+{
+	glPushMatrix();
+	glColor3f(0.3f, 0.3f, 0.3f);
+	glTranslatef(0.0, 300.0, -groundLong/2+500);
+	glRotatef(90, 1.0f, 0.0f, 0.0f);
+	//left
+	glPushMatrix();
+	glTranslatef(-300.0, 0.0, 0.0);
+	gluCylinder(texture_ground.quad, 10.0, 10.0, 300, 8, 20);
+	glPopMatrix();
+	//right
+	glPushMatrix();
+	glTranslatef(300.0, 0.0, 0.0);
+	gluCylinder(texture_ground.quad, 10.0, 10.0, 300, 8, 20);
+	glPopMatrix();
+	//finish flag
+	glPushMatrix();
+	glColor3f(0.8f, 0.8f, 0.8f);
+	glTranslatef(0.0, 0.0, 10.0);
+	glEnable(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, texture_ground.tex);
+	glScalef(1.0, 0.1, 1.0);
+	gluCylinder(texture_ground.quad, 300.0, 300.0, 60, 4, 20);
+	glDisable(GL_TEXTURE_2D);
+	glPopMatrix();
+
+	glPopMatrix();
+}
+
+void drawCone(float x, float y)
+{
+	glPushMatrix();
+	glColor3f(1.0f, 0.5f, 0.0f);
+	glTranslatef(x, 80.0, y);
+	glRotatef(90, 1.0f, 0.0f, 0.0f);
+	//cone
+	glPushMatrix();
+	gluCylinder(texture_ground.quad, 5.0, 30.0, 80, 8, 20);
+	glPopMatrix();
+	//square
+	glPushMatrix();
+	glTranslatef(0.0, 0.0, 79.0);
+	gluDisk(texture_car.quad, 0.0, 50, 4, 5);
+	glPopMatrix();
+	glPopMatrix();
+}
+
+void drawCones()
+{
+	for (int i=-groundLong/2; i<groundLong/2; i+=201)
+	{
+		drawCone(-350-50*(i%2),i);
+		drawCone(350+50*(i%2),i);
+	}
+}
+
 void drawGround()
 {
 	// Setup
@@ -489,6 +546,9 @@ void display(void) // Here's Where We Do All The Drawing
 	// Draw grounds and objects here
 	drawOrigin();
 	drawGround();
+	drawFinish();
+	drawBlocks();
+	drawCones();
 	drawCar();
 
 	glFlush();
@@ -609,7 +669,7 @@ void timer(int t)
 	float newCarX = carX - (movingDistance * sin(carOrientation * PI / 180.0f));
 	float newCarZ = carZ - (movingDistance * cos(carOrientation * PI / 180.0f));
 
-	if((newCarX > -groundWidth/2 && newCarX < groundWidth/2) 
+	if((newCarX > -groundWidth/2+150 && newCarX < groundWidth/2-150) 
 		&& (newCarZ > -groundLong/2 && newCarZ < groundLong/2))
 	{
 		carX = newCarX;
