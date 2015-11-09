@@ -117,7 +117,7 @@ void loadImageTexture(char *filename, image_texture &image_texture)
 void reset(void)
 {
 	carX = 0.0f;
-	carZ = 0.0f;
+	carZ = groundLong/2-300;
 	carOrientation = 0.0f;
 	wheelOrientation = 0.0f;
 	acceleration = 0.0f;
@@ -200,7 +200,7 @@ void updateCamera()
 		gluLookAt(carX,wheelRadius,carZ, carX+forwardX, wheelRadius, carZ+forwardZ, 0, 1, 0);
 	}
 	else
-	{
+	{f
 		gluLookAt(cam_X,cam_Y,cam_Z, cam_ViewX, cam_ViewY, cam_ViewZ, 0, 1, 0);
 	}
 }
@@ -286,6 +286,78 @@ void drawFinish()
 	glPopMatrix();
 
 	glPopMatrix();
+}
+
+void drawBlock(float x, float y)
+{
+	glPushMatrix();
+	glTranslatef(x, 40.0, y);
+	glRotatef(90, 1.0f, 0.0f, 0.0f);
+	glColor3f(1.0f, 0.8f, 0.0f);
+	//left1
+	glPushMatrix();
+	glRotatef(20, 1.0f, 0.0f, 0.0f);
+	glTranslatef(-80.0, 0.0, 0.0);
+	gluCylinder(texture_ground.quad, 5.0, 5.0, 40, 4, 20);
+	glPopMatrix();
+	//left2
+	glPushMatrix();
+	glRotatef(-20, 1.0f, 0.0f, 0.0f);
+	glTranslatef(-80.0, 0.0, 0.0);
+	gluCylinder(texture_ground.quad, 5.0, 5.0, 40, 4, 20);
+	glPopMatrix();
+	//right1
+	glPushMatrix();
+	glRotatef(20, 1.0f, 0.0f, 0.0f);
+	glTranslatef(80.0, 0.0, 0.0);
+	gluCylinder(texture_ground.quad, 5.0, 5.0, 40, 4, 20);
+	glPopMatrix();
+	//right2
+	glPushMatrix();
+	glRotatef(-20, 1.0f, 0.0f, 0.0f);
+	glTranslatef(80.0, 0.0, 0.0);
+	gluCylinder(texture_ground.quad, 5.0, 5.0, 40, 4, 20);
+	glPopMatrix();
+	//block1
+	glEnable(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, texture_ground.tex);
+	glPushMatrix();
+	glRotatef(90, 0.0f, 0.0f, 1.0f);
+	gluCylinder(texture_ground.quad, 80.0, 80.0, 10, 2, 20);
+	glPopMatrix();
+	//block2
+	glPushMatrix();
+	glTranslatef(0.0, 0.0, 15.0);
+	glRotatef(90, 0.0f, 0.0f, 1.0f);
+	gluCylinder(texture_ground.quad, 80.0, 80.0, 8, 2, 20);
+	glPopMatrix();
+	//clean up
+	glDisable(GL_TEXTURE_2D);
+	glPopMatrix();
+}
+
+void drawBlocks()
+{
+	drawBlock(-200, 100-groundLong/2);
+	drawBlock(0, 100-groundLong/2);
+	drawBlock(200, 100-groundLong/2);
+	drawBlock(200, -7000);
+	drawBlock(-100, -6000);
+	drawBlock(-50, -5500);
+	drawBlock(250, -3500);
+	drawBlock(-150, -3500);
+	drawBlock(0, -1500);
+	drawBlock(0, 0);
+	drawBlock(-100, 400);
+	drawBlock(250, 800);
+	drawBlock(0, 1500);
+	drawBlock(-150, 2400);
+	drawBlock(200, 4800);
+	drawBlock(0, 6000);
+	drawBlock(-50, 7500);
+	drawBlock(-200, groundLong/2-100);
+	drawBlock(0, groundLong/2-100);
+	drawBlock(200, groundLong/2-100);
 }
 
 void drawCone(float x, float y)
@@ -670,7 +742,7 @@ void timer(int t)
 	float newCarZ = carZ - (movingDistance * cos(carOrientation * PI / 180.0f));
 
 	if((newCarX > -groundWidth/2+150 && newCarX < groundWidth/2-150) 
-		&& (newCarZ > -groundLong/2 && newCarZ < groundLong/2))
+		&& (newCarZ > -groundLong/2+200 && newCarZ < groundLong/2-200))
 	{
 		carX = newCarX;
 		carZ = newCarZ;
